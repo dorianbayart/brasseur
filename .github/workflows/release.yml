@@ -1,0 +1,53 @@
+# Construit Brasseur.app et publie une release à chaque tag v*.
+# Rien n'est gardé dans le stockage GitHub Actions (ni artefact ni cache) : seul le zip
+# attaché à la release reste, et seules les 3 dernières releases sont conservées.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: # à la main : construit seulement, sans rien publier
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Construire
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            export VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          fi
+          ./scripts/build.sh
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" build/Brasseur.app/Contents/Info.plist
+          file build/Brasseur.app/Contents/MacOS/Brasseur
+
+      - name: Publier la release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ZIP="Brasseur-${GITHUB_REF_NAME#v}.zip"
+          ditto -c -k --keepParent build/Brasseur.app "$ZIP"
+          gh release create "$GITHUB_REF_NAME" "$ZIP" --title "Brasseur ${GITHUB_REF_NAME#v}" --generate-notes
+
+      - name: Ne garder que les 3 dernières releases
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release list --limit 100 --json tagName,createdAt \
+            --jq 'sort_by(.createdAt) | reverse | .[3:] | .[].tagName' |
+          while read -r tag; do
+            echo "Suppression de la release $tag (le tag reste)"
+            gh release delete "$tag" --yes
+          done

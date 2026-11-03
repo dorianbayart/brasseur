@@ -24,6 +24,11 @@ cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp "$ICON" "$APP/Contents/Resources/AppIcon.icns"
 # Langues déclarées : macOS choisit selon la langue du système (les textes sont dans Localization.swift).
 for lang in en fr; do mkdir -p "$APP/Contents/Resources/$lang.lproj" && : > "$APP/Contents/Resources/$lang.lproj/InfoPlist.strings"; done
+# Version fournie par la CI (tag v1.2.3 → 1.2.3) ; sinon celle de Info.plist.
+if [ -n "${VERSION:-}" ]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP/Contents/Info.plist"
+    [ -n "${BUILD_NUMBER:-}" ] && /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$APP/Contents/Info.plist"
+fi
 codesign --force --sign - "$APP"
 echo "Construit : $APP"
 
