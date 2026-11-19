@@ -38,6 +38,8 @@ struct BrewPackage: Identifiable, Hashable, Sendable {
     var runtimeDeps: [String] = []
     /// Exécutables en cours d'exécution qui appartiennent à ce paquet.
     var runningProcesses: [String] = []
+    /// Extensions du paquet lancées par macOS (widgets…) : signalées, mais ne bloquent rien.
+    var runningExtensions: [String] = []
     /// Taille sur disque (nil tant qu'elle n'est pas calculée, ou inconnue pour un installeur .pkg).
     var size: Int64? = nil
 
@@ -46,6 +48,17 @@ struct BrewPackage: Identifiable, Hashable, Sendable {
 
     var serviceRunning: Bool { serviceStatus == "started" }
     var inUse: Bool { !runningProcesses.isEmpty || serviceRunning }
+    var extensionActive: Bool { !runningExtensions.isEmpty }
+
+    /// Fixe ce qui tourne ; vrai si quelque chose a changé.
+    @discardableResult
+    mutating func apply(_ usage: ProcessScanner.Usage?) -> Bool {
+        let u = usage ?? .init()
+        guard runningProcesses != u.processes || runningExtensions != u.extensions else { return false }
+        runningProcesses = u.processes
+        runningExtensions = u.extensions
+        return true
+    }
     var title: String { displayName.isEmpty ? name : displayName }
 
     var usageDescription: String {

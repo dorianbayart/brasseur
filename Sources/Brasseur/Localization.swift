@@ -155,6 +155,10 @@ private let englishStrings: [String: String] = [
     "Dans la file des mises à jour": "Waiting in the upgrade queue",
     "service": "service",
     "Service brew démarré": "brew service running",
+    "extension": "extension",
+    "Extension lancée par macOS (widget…) : %@. Elle ne bloque pas la mise à jour.":
+        "Extension launched by macOS (widget…): %@. It does not block the upgrade.",
+    "Extension active": "Active extension",
     "admin": "admin",
     "Demande le mot de passe administrateur : jamais mis à jour automatiquement": "Needs the administrator password: never upgraded automatically",
     "épinglé": "pinned",

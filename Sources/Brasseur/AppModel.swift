@@ -319,7 +319,7 @@ final class AppModel: ObservableObject {
             let usage = ProcessScanner.usage(for: list, prefix: runner.prefix)
             let previous = Dictionary(packages.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
             for idx in list.indices {
-                list[idx].runningProcesses = usage[list[idx].id] ?? []
+                list[idx].apply(usage[list[idx].id])
                 if learnedAdmin.contains(list[idx].id) { list[idx].needsAdmin = true }
                 // Taille déjà connue pour la même version : on la garde.
                 if let old = previous[list[idx].id], old.installedVersion == list[idx].installedVersion {
@@ -398,8 +398,7 @@ final class AppModel: ObservableObject {
         var changed = false
         var list = packages
         for idx in list.indices {
-            let now = usage[list[idx].id] ?? []
-            if list[idx].runningProcesses != now { list[idx].runningProcesses = now; changed = true }
+            if list[idx].apply(usage[list[idx].id]) { changed = true }
         }
         if changed { packages = list }
     }

@@ -59,8 +59,15 @@ enum ProcessScanner {
         }
     }
 
-    /// Associe chaque identifiant de paquet aux noms des exécutables qui tournent.
-    static func usage(for packages: [BrewPackage], prefix: String) -> [String: [String]] {
+    /// Ce qui tourne depuis un paquet : ses exécutables, et à part les extensions (.appex) que macOS
+    /// lance lui-même (widgets, Quick Look, Finder Sync…), qui ne signifient pas que l'app est ouverte.
+    struct Usage: Equatable, Sendable {
+        var processes: [String] = []
+        var extensions: [String] = []
+    }
+
+    /// Associe chaque identifiant de paquet à ce qui tourne depuis ses fichiers.
+    static func usage(for packages: [BrewPackage], prefix: String) -> [String: Usage] {
         let cellar = prefix + "/Cellar/"
         let caskroom = prefix + "/Caskroom/"
         var appOwner: [String: String] = [:]
@@ -68,9 +75,9 @@ enum ProcessScanner {
             for path in p.appPaths { appOwner[path] = p.id }
         }
 
-        var result: [String: Set<String>] = [:]
+        var processes: [String: Set<String>] = [:]
+        var extensions: [String: Set<String>] = [:]
         for path in executablePaths() {
-            let exe = (path as NSString).lastPathComponent
             var owner: String?
             if path.hasPrefix(cellar) {
                 let name = path.dropFirst(cellar.count).split(separator: "/").first.map(String.init)
@@ -83,8 +90,18 @@ enum ProcessScanner {
                 let bundle = String(path[..<range.lowerBound]) + ".app"
                 owner = appOwner[bundle]
             }
-            if let owner { result[owner, default: []].insert(exe) }
+            guard let owner else { continue }
+            // …/PlugIns/WidgetsExtension.appex/Contents/MacOS/WidgetsExtension → WidgetsExtension
+            if let appex = path.split(separator: "/").first(where: { $0.hasSuffix(".appex") }) {
+                extensions[owner, default: []].insert(String(appex.dropLast(".appex".count)))
+            } else {
+                processes[owner, default: []].insert((path as NSString).lastPathComponent)
+            }
         }
-        return result.mapValues { $0.sorted() }
+        var result: [String: Usage] = [:]
+        for id in Set(processes.keys).union(extensions.keys) {
+            result[id] = Usage(processes: (processes[id] ?? []).sorted(), extensions: (extensions[id] ?? []).sorted())
+        }
+        return result
     }
 }

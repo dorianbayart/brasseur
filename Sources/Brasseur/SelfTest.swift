@@ -15,13 +15,15 @@ enum SelfTest {
             do {
                 var list = try BrewParser.packages(info: i.stdout, outdated: o.stdout, services: s.ok ? s.stdout : nil)
                 let usage = ProcessScanner.usage(for: list, prefix: runner.prefix)
-                for idx in list.indices { list[idx].runningProcesses = usage[list[idx].id] ?? [] }
+                for idx in list.indices { list[idx].apply(usage[list[idx].id]) }
                 let outdatedList = list.filter(\.outdated)
                 print("brew: \(runner.brewPath)")
                 print("installés: \(list.filter { $0.kind == .formula }.count) formules, \(list.filter { $0.kind == .cask }.count) casks")
                 print("en retard: \(outdatedList.filter { !$0.greedyOnly }.count) (+\(outdatedList.filter(\.greedyOnly).count) greedy)")
                 print("utilisés:")
                 for p in list where p.inUse { print("  \(p.id)  \(p.usageDescription)") }
+                print("extensions actives (non bloquantes):")
+                for p in list where p.extensionActive { print("  \(p.id)  \(p.runningExtensions.joined(separator: ", "))") }
                 let auto = outdatedList.filter { !$0.pinned && !$0.inUse && !$0.needsAdmin }
                 let running = list.filter { $0.kind == .formula && $0.inUse }
                 print("auto-éligibles: \(auto.count)  protégés du nettoyage: \(Set(running.map(\.name) + running.flatMap(\.runtimeDeps)).sorted())")

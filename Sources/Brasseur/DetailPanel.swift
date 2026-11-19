@@ -48,6 +48,9 @@ struct PackageDetailPanel: View {
                             GridRow { label(tr("Site")); Link(home, destination: url) }
                         }
                         if package.inUse { row(tr("Utilisé par"), package.usageDescription) }
+                        if package.extensionActive {
+                            row(tr("Extension active"), package.runningExtensions.joined(separator: ", "))
+                        }
                         let deps = details?.dependencies ?? []
                         if !deps.isEmpty { row(tr("Dépendances"), deps.joined(separator: ", ")) }
                     }

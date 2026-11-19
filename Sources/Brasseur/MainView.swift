@@ -155,6 +155,11 @@ struct StatusBadges: View {
             if model.activeIDs.contains(package.id) { Chip(text: tr("en cours"), color: .blue, help: tr("Mise à jour en cours")) }
             else if model.queuedIDs.contains(package.id) { Chip(text: tr("en attente"), color: .blue, help: tr("Dans la file des mises à jour")) }
             if package.inUse { Chip(text: tr("utilisé"), color: .orange, help: package.usageDescription) }
+            if package.extensionActive {
+                Chip(text: tr("extension"), color: .teal,
+                     help: tr("Extension lancée par macOS (widget…) : %@. Elle ne bloque pas la mise à jour.",
+                              package.runningExtensions.joined(separator: ", ")))
+            }
             if package.serviceRunning { Chip(text: tr("service"), color: .purple, help: tr("Service brew démarré")) }
             if package.needsAdmin { Chip(text: tr("admin"), color: .red, help: tr("Demande le mot de passe administrateur : jamais mis à jour automatiquement")) }
             if package.pinned { Chip(text: tr("épinglé"), color: .gray, help: tr("Épinglé avec brew pin : jamais mis à jour")) }
