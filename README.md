@@ -5,7 +5,7 @@
 <h1 align="center">Brasseur</h1>
 
 <p align="center">
-  <strong>Homebrew sans le terminal, et sans casser les apps ouvertes.</strong><br>
+  <strong>Homebrew sans le terminal</strong><br>
   Une app macOS qui vit dans la barre des menus et garde vos paquets brew à jour.
 </p>
 
@@ -22,16 +22,22 @@
 
 ## Pourquoi Brasseur
 
-`brew upgrade` met à jour une app même si elle est ouverte, et une formule même si un
-programme s'en sert. Brasseur regarde ce qui tourne sur le Mac avant de toucher à quoi
-que ce soit :
+Avec Homebrew, chaque mise à jour se fait à la main, dans le terminal. Il faut savoir
+que `brew update` ne met rien à jour, que les apps se mettent à jour avec `--cask`, et
+que certaines n'apparaissent qu'avec `--greedy`. Après la mise à jour d'un service, il
+faut encore le redémarrer avec `brew services restart` : une commande de plus à
+connaître et à taper. Et il faut penser à faire tout ça régulièrement. Résultat : on
+oublie, et les paquets prennent du retard.
 
-- un paquet **utilisé** est signalé, et « Tout sauf utilisés » le laisse de côté ;
+Avec Brasseur, on lance l'app et c'est tout. Elle vérifie les nouvelles versions,
+installe les mises à jour toute seule, en fond, et fait le ménage de temps en temps.
+Rien à taper, rien à retenir.
+
+Elle fait aussi attention à ce qui tourne sur le Mac :
+
 - une app ouverte est fermée proprement, mise à jour, puis relancée ;
-- une formule en cours d'utilisation garde ses anciennes versions sur le disque ;
+- un programme en cours d'utilisation n'est pas mis à jour sous vos pieds ;
 - un service brew mis à jour est redémarré.
-
-Tout le reste peut se mettre à jour tout seul, en fond, sans ralentir le Mac.
 
 ## Mises à jour
 
